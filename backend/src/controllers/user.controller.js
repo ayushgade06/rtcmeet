@@ -14,11 +14,18 @@ export const register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newUser = await User.create({ name, username, password: hashedPassword });
+        const newUser = new User({
+            name: name,
+            username: username,
+            password: hashedPassword
+        });
 
-        return res.status(httpStatus.CREATED).json({ message: "User registered successfully" });
-    } catch (error) {
-        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: "Internal server error" });
+        await newUser.save();
+
+        res.status(httpStatus.CREATED).json({ message: "User Registered Successfully" })
+
+    } catch (e) {
+        res.status(500).json({ message: `Something went wrong ${e}` })
     }
 }
 
@@ -26,27 +33,26 @@ export const login = async (req, res) => {
     const { username, password } = req.body;
 
     try {
+
         const user = await User.findOne({ username });
         if (!user) {
-            return res.status(httpStatus.NOT_FOUND).json({ message: "User not found" });
+            return res.status(httpStatus.NOT_FOUND).json({ message: "User not Found" })
         }
 
-        if(bcrypt.compare(password, user.password)){
-            let token =  crypto.randomBytes(20).toString("hex");
+        let isPasswordCorrect = await bcrypt.compare(password, user.password)
+
+        if (isPasswordCorrect) {
+            let token = crypto.randomBytes(20).toString("hex");
 
             user.token = token;
             await user.save();
-            return res.status(httpStatus.OK).json({ message: "Login successful", token });
+            return res.status(httpStatus.OK).json({ token: token, message: "Login Successful" })
+        } else {
+            return res.status(httpStatus.UNAUTHORIZED).json({ message: "Invalid Password" })
         }
 
-        // const isPasswordValid = await bcrypt.compare(password, user.password);
-        // if (!isPasswordValid) {
-        //     return res.status(httpStatus.UNAUTHORIZED).json({ message: "Invalid password" });
-        // }
-
-        return res.status(httpStatus.OK).json({ message: "Login successful" });
-    } catch (error) {
-        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: "Internal server error" });
+    } catch (e) {
+        return res.status(500).json({ message: `Something went wrong ${e}` })
     }
 }
 

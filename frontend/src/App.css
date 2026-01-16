@@ -1,96 +1,254 @@
-.landingPageContainer {
-  width: 100vw;
-  height: 100vh;
-  background: url("/public/background.png");
-  background-repeat: no-repeat;
-  background-size: cover;
-  color: white;
-}
-
-.landingPageContainer nav {
-  padding-inline: 1.2rem;
-  padding-block: 1.6rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-}
-
-.landingPageContainer nav h2 {
-  font-size: 1.8rem;
-  font-weight: 500;
-}
-
-.landingPageContainer nav .navlist {
-  display: flex;
-  gap: 1.6rem;
-  cursor: pointer;
-
-}
-
-.landingMainContainer {
-  display: flex;
-  justify-content: space-between;
-  padding-inline: 3rem;
-  height: 80vh;
-  align-items: center;
-}
-
-.landingMainContainer>div:nth-child(1) {
-  font-size: 2.2rem;
-}
-
-.landingMainContainer>div:nth-child(1) div[role='button'] {
-  background: #D97500;
-  width: fit-content;
-  padding: 1rem;
-  border-radius: 20px;
-  margin-top: 1.9rem;
-}
-
-.landingMainContainer>div:nth-child(1) div[role='button'] a {
-  text-decoration: none;
-  color: white;
-  font-size: 1.7rem;
-}
-
-.landingMainContainer>div:nth-child(2) img {
-  height: 70vh;
-  width: auto;
-}
-
+/* Navbar Styles */
 .navBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-inline: 20px;
-  text-align: center;
-
+  padding: 1rem 2rem;
+  background-color: var(--bg-white);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 70px;
 }
+
+@media (prefers-color-scheme: dark) {
+  .navBar {
+    background-color: var(--bg-dark);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+}
+
+.navBar h2 {
+  font-size: 1.5rem;
+  background: linear-gradient(45deg, var(--primary), #8ab4f8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.navLinks {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.navLink {
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-secondary-light);
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.navLink:hover {
+  color: var(--primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  .navLink {
+    color: var(--text-secondary-dark);
+  }
+}
+
+/* Home / Meeting Container Styles */
 .meetContainer {
   display: flex;
-  padding-inline: 20px;
-  height: 80vh;
-  gap: 10vw;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 70px);
+  padding: 2rem;
+  gap: 4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.leftPanel {
+  flex: 1;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
 }
 
+.leftPanel h2 {
+  font-size: 2.5rem;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary-light);
+}
 
-
-.leftPanel {
-  height: 100%;
-  display: flex;
-  align-items: center;
-
+@media (prefers-color-scheme: dark) {
+  .leftPanel h2 {
+    color: var(--text-primary-dark);
+  }
 }
 
 .rightPanel {
+  flex: 1;
   display: flex;
+  justify-content: center;
   align-items: center;
 }
 
-.rightPanel > img {
-  width: 30vw;
+.rightPanel img {
+  width: 100%;
+  max-width: 600px;
   height: auto;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  transform: perspective(1000px) rotateY(-5deg);
+  transition: transform 0.3s ease;
+}
+
+.rightPanel img:hover {
+  transform: perspective(1000px) rotateY(0deg);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 900px) {
+  .meetContainer {
+    flex-direction: column-reverse;
+    text-align: center;
+    gap: 2rem;
+    padding-top: 1rem;
+  }
+
+  .leftPanel {
+    align-items: center;
+  }
+  
+  .rightPanel img {
+    transform: none;
+    max-width: 80%;
+  }
+}
+
+/* Landing Page Styles (Restored & Polished) */
+.landingPageContainer {
+  width: 100vw;
+  min-height: 100vh;
+  background-color: var(--bg-dark); /* Modern dark theme default */
+  color: white;
+  background-image: radial-gradient(circle at 10% 20%, rgb(69, 86, 102) 0%, rgb(34, 34, 34) 90%);
+}
+
+.landingPageContainer nav {
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.landingPageContainer nav h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.landingPageContainer nav .navlist {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  cursor: pointer;
+}
+
+.landingPageContainer nav .navlist p {
+    font-weight: 500;
+    transition: color 0.3s;
+}
+.landingPageContainer nav .navlist p:hover {
+    color: #4facfe;
+}
+
+.landingMainContainer {
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
+  padding: 4rem 2rem;
+  min-height: 80vh;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.landingMainContainer > div:first-child {
+  flex: 1;
+  max-width: 600px;
+}
+
+.landingMainContainer h1 {
+  font-size: 3.5rem;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+}
+
+.landingMainContainer p {
+    font-size: 1.2rem;
+    color: #ccc;
+    margin-bottom: 2.5rem;
+}
+
+.landingMainContainer div[role='button'] {
+    display: inline-block;
+}
+
+.landingMainContainer div[role='button'] a {
+  background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+  padding: 1rem 2.5rem;
+  border-radius: 50px;
+  text-decoration: none;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(26, 115, 232, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: inline-block;
+}
+
+.landingMainContainer div[role='button'] a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(26, 115, 232, 0.6);
+}
+
+.landingMainContainer > div:nth-child(2) {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.landingMainContainer > div:nth-child(2) img {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0px); }
+}
+
+@media (max-width: 900px) {
+    .landingMainContainer {
+        flex-direction: column-reverse;
+        text-align: center;
+    }
+    
+    .landingMainContainer h1 {
+        font-size: 2.5rem;
+    }
+    
+    .landingPageContainer nav {
+        flex-direction: column;
+        gap: 1rem;
+    }
 }
