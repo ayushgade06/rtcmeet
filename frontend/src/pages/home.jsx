@@ -116,7 +116,7 @@ function HomeComponent() {
           
            <div style={{marginTop: '2rem', borderTop: '1px solid #ddd', paddingTop: '1rem'}}>
                <p style={{fontSize: '0.9rem', color: '#666'}}>
-                   <a href="#" style={{color: '#1a73e8'}}>Learn more</a> about Apna Video Call
+                   <a href="#" style={{color: '#1a73e8'}}>Learn more</a> about RTCMeet
                </p>
            </div>
         </div>

@@ -57,3 +57,40 @@ export const login = async (req, res) => {
 }
 
 
+
+export const getUserActivity = async (req, res) => {
+    const { token } = req.query;
+
+    try {
+        const user = await User.findOne({ token: token });
+        if (!user) {
+            return res.status(httpStatus.NOT_FOUND).json({ message: "User not found" });
+        }
+        res.status(httpStatus.OK).json(user.meetings);
+    } catch (e) {
+        res.status(500).json({ message: `Something went wrong ${e}` });
+    }
+}
+
+export const addToActivity = async (req, res) => {
+    const { token, meeting_code, date } = req.body;
+
+    try {
+        const user = await User.findOne({ token: token });
+        if (!user) {
+            return res.status(httpStatus.NOT_FOUND).json({ message: "User not found" });
+        }
+
+        const newMeeting = {
+            meetingCode: meeting_code,
+            date: date
+        };
+
+        user.meetings.push(newMeeting);
+        await user.save();
+
+        res.status(httpStatus.ACCEPTED).json({ message: "Added to activity" });
+    } catch (e) {
+        res.status(500).json({ message: `Something went wrong ${e}` });
+    }
+}

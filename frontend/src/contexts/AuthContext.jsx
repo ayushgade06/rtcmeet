@@ -1,5 +1,7 @@
 import axios from "axios";
 import { createContext, useState } from "react";
+import server from "../environment";
+
 
 export const AuthContext = createContext();
 
@@ -9,10 +11,11 @@ export const AuthProvider = ({ children }) => {
 
     const handleLogin = async (username, password) => {
         try {
-            const response = await axios.post("http://localhost:3000/api/v1/users/login", {
+            const response = await axios.post(`${server}/api/v1/users/login`, {
                 username,
                 password,
             });
+
             setUser(response.data.user);
             setToken(response.data.token);
             localStorage.setItem("token", response.data.token);
@@ -34,11 +37,12 @@ export const AuthProvider = ({ children }) => {
 
     const handleRegister = async (name, username, password) => {
         try {
-            const response = await axios.post("http://localhost:3000/api/v1/users/register", {
+            const response = await axios.post(`${server}/api/v1/users/register`, {
                 name,
                 username,
                 password,
             });
+
             setUser(response.data.user);
             setToken(response.data.token);
             localStorage.setItem("token", response.data.token);
@@ -48,8 +52,35 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const getHistoryOfUser = async () => {
+        try {
+            const response = await axios.get(`${server}/api/v1/users/get_all_activity`, {
+                params: {
+                    token: localStorage.getItem("token")
+                }
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    const addToUserHistory = async (meetingCode) => {
+        try {
+            const response = await axios.post(`${server}/api/v1/users/add_to_activity`, {
+                token: localStorage.getItem("token"),
+                meeting_code: meetingCode,
+                date: new Date()
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     return (
-        <AuthContext.Provider value={{ user, token, handleLogin, handleRegister }}>
+        <AuthContext.Provider value={{ user, token, handleLogin, handleRegister, getHistoryOfUser, addToUserHistory }}>
+
             {children}
         </AuthContext.Provider>
     );

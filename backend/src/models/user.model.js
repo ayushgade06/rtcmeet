@@ -16,7 +16,14 @@ const userSchema = new mongoose.Schema({
     },
     token: {
         type: String
-    }
+    },
+    meetings: [
+        {
+            meetingCode: { type: String },
+            date: { type: Date, default: Date.now }
+        }
+    ]
+
 });
 
 const User = mongoose.model("User", userSchema);
