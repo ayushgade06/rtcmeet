@@ -274,19 +274,33 @@ export default function VideoMeetComponent() {
 
             socketRef.current.on('user-joined', (id, clients) => {
                 clients.forEach((socketListId) => {
+                    // Skip creating a connection with ourselves
+                    if (socketListId === socketIdRef.current) return;
 
                     connections[socketListId] = new RTCPeerConnection(peerConfigConnections)
-                    // Wait for their ice candidate       
+
+                    // Log connection state changes for debugging
+                    connections[socketListId].onconnectionstatechange = () => {
+                        console.log(`[RTC] Connection state with ${socketListId}:`, connections[socketListId].connectionState);
+                    }
+                    connections[socketListId].onicegatheringstatechange = () => {
+                        console.log(`[RTC] ICE gathering state with ${socketListId}:`, connections[socketListId].iceGatheringState);
+                    }
+
                     connections[socketListId].onicecandidate = function (event) {
                         if (event.candidate != null) {
                             socketRef.current.emit('signal', socketListId, JSON.stringify({ 'ice': event.candidate }))
                         }
                     }
 
-                    // Wait for their video stream (modern ontrack API)
+                    // Modern ontrack API
                     connections[socketListId].ontrack = (event) => {
-                        const stream = event.streams[0];
-                        if (!stream) return;
+                        console.log(`[RTC] ontrack fired from ${socketListId}`, event.streams);
+                        // Use streams[0] if available, otherwise build from track
+                        let stream = event.streams && event.streams[0];
+                        if (!stream) {
+                            stream = new MediaStream([event.track]);
+                        }
 
                         let videoExists = videoRef.current.find(video => video.socketId === socketListId);
 
@@ -314,7 +328,7 @@ export default function VideoMeetComponent() {
                         }
                     };
 
-                    // Add the local video stream (modern addTrack API)
+                    // Add local stream tracks to this connection
                     if (window.localStream !== undefined && window.localStream !== null) {
                         addTracksToConnection(connections[socketListId], window.localStream)
                     } else {
@@ -328,10 +342,7 @@ export default function VideoMeetComponent() {
                     for (let id2 in connections) {
                         if (id2 === socketIdRef.current) continue
 
-                        try {
-                            addTracksToConnection(connections[id2], window.localStream)
-                        } catch (e) { }
-
+                        // Tracks already added above — do NOT add again (causes InvalidStateError)
                         connections[id2].createOffer().then((description) => {
                             connections[id2].setLocalDescription(description)
                                 .then(() => {
@@ -621,6 +632,7 @@ export default function VideoMeetComponent() {
                                         }
                                     }}
                                     autoPlay
+                                    playsInline
                                 ></video>
                             </div>
                         ))}
