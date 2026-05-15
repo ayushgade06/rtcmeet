@@ -80,9 +80,18 @@ export default function VideoMeetComponent() {
         getPermissions();
     }, [])
 
+    // After switching from lobby to meeting view, the new <video> element
+    // mounts asynchronously — retry until the ref is available.
     useEffect(() => {
-        if (!askForUsername && localVideoref.current && window.localStream) {
-            localVideoref.current.srcObject = window.localStream;
+        if (!askForUsername) {
+            const attachLocalStream = () => {
+                if (localVideoref.current && window.localStream) {
+                    localVideoref.current.srcObject = window.localStream;
+                } else {
+                    setTimeout(attachLocalStream, 100);
+                }
+            };
+            attachLocalStream();
         }
     }, [askForUsername])
 
@@ -104,6 +113,10 @@ export default function VideoMeetComponent() {
                 setVideoAvailable(true);
                 setAudioAvailable(true);
                 window.localStream = stream;
+                // Attach to pre-join preview immediately
+                if (localVideoref.current) {
+                    localVideoref.current.srcObject = stream;
+                }
             }
 
             if (navigator.mediaDevices.getDisplayMedia) {
