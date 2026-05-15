@@ -24,6 +24,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/v1/users", userRoutes);
 
+app.get("/ping", (req, res) => {
+    res.status(200).json({ status: "ok", uptime: process.uptime() });
+});
+
 const connectDB = async () => {
     try {
         const connectionInstance = await mongoose.connect(`${process.env.MONGODB_URI}/rtcmeet`);

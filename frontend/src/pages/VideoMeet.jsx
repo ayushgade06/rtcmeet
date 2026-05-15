@@ -129,6 +129,13 @@ export default function VideoMeetComponent() {
         connectToSocketServer();
     }
 
+    // Helper: add all tracks of a stream to a peer connection
+    let addTracksToConnection = (connection, stream) => {
+        stream.getTracks().forEach(track => {
+            connection.addTrack(track, stream);
+        });
+    }
+
     let getUserMediaSuccess = (stream) => {
         try {
             window.localStream.getTracks().forEach(track => track.stop())
@@ -140,7 +147,7 @@ export default function VideoMeetComponent() {
         for (let id in connections) {
             if (id === socketIdRef.current) continue
 
-            connections[id].addStream(window.localStream)
+            addTracksToConnection(connections[id], window.localStream)
 
             connections[id].createOffer().then((description) => {
                 connections[id].setLocalDescription(description)
@@ -165,7 +172,7 @@ export default function VideoMeetComponent() {
             localVideoref.current.srcObject = window.localStream
 
             for (let id in connections) {
-                connections[id].addStream(window.localStream)
+                addTracksToConnection(connections[id], window.localStream)
 
                 connections[id].createOffer().then((description) => {
                     connections[id].setLocalDescription(description)
@@ -197,7 +204,7 @@ export default function VideoMeetComponent() {
         for (let id in connections) {
             if (id === socketIdRef.current) continue
 
-            connections[id].addStream(window.localStream)
+            addTracksToConnection(connections[id], window.localStream)
 
             connections[id].createOffer().then((description) => {
                 connections[id].setLocalDescription(description)
@@ -276,14 +283,17 @@ export default function VideoMeetComponent() {
                         }
                     }
 
-                    // Wait for their video stream
-                    connections[socketListId].onaddstream = (event) => {
+                    // Wait for their video stream (modern ontrack API)
+                    connections[socketListId].ontrack = (event) => {
+                        const stream = event.streams[0];
+                        if (!stream) return;
+
                         let videoExists = videoRef.current.find(video => video.socketId === socketListId);
 
                         if (videoExists) {
                             setVideos(videos => {
                                 const updatedVideos = videos.map(video =>
-                                    video.socketId === socketListId ? { ...video, stream: event.stream } : video
+                                    video.socketId === socketListId ? { ...video, stream: stream } : video
                                 );
                                 videoRef.current = updatedVideos;
                                 return updatedVideos;
@@ -291,7 +301,7 @@ export default function VideoMeetComponent() {
                         } else {
                             let newVideo = {
                                 socketId: socketListId,
-                                stream: event.stream,
+                                stream: stream,
                                 autoplay: true,
                                 playsinline: true
                             };
@@ -304,13 +314,13 @@ export default function VideoMeetComponent() {
                         }
                     };
 
-                    // Add the local video stream
+                    // Add the local video stream (modern addTrack API)
                     if (window.localStream !== undefined && window.localStream !== null) {
-                        connections[socketListId].addStream(window.localStream)
+                        addTracksToConnection(connections[socketListId], window.localStream)
                     } else {
                         let blackSilence = (...args) => new MediaStream([black(...args), silence()])
                         window.localStream = blackSilence()
-                        connections[socketListId].addStream(window.localStream)
+                        addTracksToConnection(connections[socketListId], window.localStream)
                     }
                 })
 
@@ -319,7 +329,7 @@ export default function VideoMeetComponent() {
                         if (id2 === socketIdRef.current) continue
 
                         try {
-                            connections[id2].addStream(window.localStream)
+                            addTracksToConnection(connections[id2], window.localStream)
                         } catch (e) { }
 
                         connections[id2].createOffer().then((description) => {
