@@ -18,6 +18,7 @@ import server from '../environment';
 const server_url = server;
 
 var connections = {};
+var iceCandidateQueue = {};  // Queue ICE candidates until remote description is set
 
 const peerConfigConnections = {
     "iceServers": [
@@ -250,19 +251,39 @@ export default function VideoMeetComponent() {
 
         if (fromId !== socketIdRef.current) {
             if (signal.sdp) {
-                connections[fromId].setRemoteDescription(new RTCSessionDescription(signal.sdp)).then(() => {
-                    if (signal.sdp.type === 'offer') {
-                        connections[fromId].createAnswer().then((description) => {
-                            connections[fromId].setLocalDescription(description).then(() => {
-                                socketRef.current.emit('signal', fromId, JSON.stringify({ 'sdp': connections[fromId].localDescription }))
+                connections[fromId].setRemoteDescription(new RTCSessionDescription(signal.sdp))
+                    .then(() => {
+                        // Flush any ICE candidates that arrived before remote description
+                        if (iceCandidateQueue[fromId]) {
+                            console.log(`[RTC] Flushing ${iceCandidateQueue[fromId].length} queued ICE candidates for ${fromId}`);
+                            iceCandidateQueue[fromId].forEach(candidate => {
+                                connections[fromId].addIceCandidate(new RTCIceCandidate(candidate))
+                                    .catch(e => console.log('[RTC] queued ICE error:', e));
+                            });
+                            delete iceCandidateQueue[fromId];
+                        }
+
+                        if (signal.sdp.type === 'offer') {
+                            connections[fromId].createAnswer().then((description) => {
+                                connections[fromId].setLocalDescription(description).then(() => {
+                                    socketRef.current.emit('signal', fromId, JSON.stringify({ 'sdp': connections[fromId].localDescription }))
+                                }).catch(e => console.log(e))
                             }).catch(e => console.log(e))
-                        }).catch(e => console.log(e))
-                    }
-                }).catch(e => console.log(e))
+                        }
+                    }).catch(e => console.log('[RTC] setRemoteDescription error:', e))
             }
 
             if (signal.ice) {
-                connections[fromId].addIceCandidate(new RTCIceCandidate(signal.ice)).catch(e => console.log(e))
+                if (connections[fromId] && connections[fromId].remoteDescription) {
+                    // Remote description already set — add candidate immediately
+                    connections[fromId].addIceCandidate(new RTCIceCandidate(signal.ice))
+                        .catch(e => console.log('[RTC] addIceCandidate error:', e));
+                } else {
+                    // Queue it until remote description is ready
+                    console.log(`[RTC] Queuing ICE candidate for ${fromId}`);
+                    if (!iceCandidateQueue[fromId]) iceCandidateQueue[fromId] = [];
+                    iceCandidateQueue[fromId].push(signal.ice);
+                }
             }
         }
     }
