@@ -1,125 +1,78 @@
-# RTCMeet - Real-Time Video Conferencing Platform
+# RTCMeet
 
-RTCMeet is a comprehensive, full-stack video conferencing application designed for seamless real-time communication. Built with the MERN stack (MongoDB, Express, React, Node.js) and powered by WebRTC and Socket.io, it provides a robust platform for video calls, instant messaging, and meeting management.
+RTCMeet is a video calling app built on the MERN stack. You sign up, enter a room code, and get a peer-to-peer video call with audio, screen sharing and a live chat. It uses WebRTC for the media and Socket.io for signalling and messages. Past meetings are saved to your history.
 
-## 🚀 Features
+## Features
 
-- **Real-Time Video & Audio**: High-quality, low-latency video and audio communication using WebRTC.
-- **Instant Messaging**: Integrated chat system allowing users to exchange messages during live meetings.
-- **Secure Authentication**: Robust user registration and login system with encrypted credentials using Bcrypt.
-- **Meeting Management**: Easily create new meetings or join existing ones using unique room IDs.
-- **Meeting History**: Keep track of past meetings and communication sessions.
-- **Responsive Design**: A modern, sleek user interface built with Material UI that works across various devices and screen sizes.
-- **Peer-to-Peer Signaling**: Efficient signaling server using Socket.io to establish stable peer connections.
+- Peer-to-peer audio and video over WebRTC
+- Screen sharing
+- Real-time chat inside a call
+- Email/password auth with bcrypt-hashed passwords
+- Meeting history per user
 
-## 🛠️ Tech Stack
+Rooms are just codes in the URL. There's no pre-booking; a room exists as long as people are connected to it, and chat is kept in memory for the duration of the call.
 
-### Frontend
-- **React.js**: Modern component-based UI development.
-- **Vite**: Ultra-fast frontend build tool.
-- **Material UI (MUI)**: Premium component library for high-quality design aesthetics.
-- **Socket.io-client**: Real-time bidirectional event-based communication.
-- **Axios**: Promised-based HTTP client for API requests.
-- **React Router**: Declarative routing for single-page applications.
+## Stack
+
+- Frontend: React 19, Vite, Material UI, Socket.io client
+- Backend: Express 5, Socket.io, Mongoose, bcrypt
+- Database: MongoDB
+- NAT traversal: Google STUN servers and the public Open Relay TURN servers
+
+## Setup
 
 ### Backend
-- **Node.js & Express**: Scalable and fast server-side environment and framework.
-- **Socket.io**: Real-time engine for signaling and messaging.
-- **Mongoose**: Elegant MongoDB object modeling for Node.js.
-- **Bcrypt**: Library for hashing passwords and ensuring user security.
-- **CORS**: Middleware for cross-origin resource sharing.
 
-### Database
-- **MongoDB**: NoSQL database for flexible and scalable data storage.
-
-## 📂 Project Structure
-
-```text
-rtcmeet/
-├── backend/
-│   ├── src/
-│   │   ├── controllers/    # Request handlers & logic (Socket & User)
-│   │   ├── models/         # Database schemas
-│   │   ├── routes/         # API endpoints definitions
-│   │   └── app.js          # Main entry point
-│   └── package.json        # Backend dependencies
-├── frontend/
-│   ├── src/
-│   │   ├── pages/          # Application views (VideoMeet, Home, Auth)
-│   │   ├── components/     # Reusable UI parts
-│   │   ├── contexts/       # Global state management
-│   │   └── utils/          # Helper functions
-│   ├── index.html          # HTML template
-│   └── package.json        # Frontend dependencies
-└── README.md               # Project documentation
-```
-
-## ⚙️ Installation & Setup
-
-### Prerequisites
-- Node.js (v18+ recommended)
-- MongoDB (running locally or a cloud instance)
-- npm or yarn
-
-### 1. Clone the repository
-```bash
-git clone <repository-url>
-cd rtcmeet
-```
-
-### 2. Backend Setup
 ```bash
 cd backend
 npm install
 ```
-*Create a `.env` file (if applicable) or ensure your MongoDB connection string is correctly configured in `app.js`.*
 
-### 3. Frontend Setup
+Copy `.env.sample` to `.env` and set:
+
+```
+MONGODB_URI=your_mongodb_connection_string
+PORT=8000
+```
+
+### Frontend
+
 ```bash
-cd ../frontend
+cd frontend
 npm install
 ```
 
-## 🚀 Running the Application
+Set `VITE_API_URL` to the backend URL (defaults to `http://localhost:8000`).
 
-### Start the Backend
+## Run
+
+Backend:
+
 ```bash
 cd backend
-# Using nodemon for development
-npx nodemon src/app.js
+npm run dev
 ```
-The backend server will typically start on `http://localhost:3000`.
 
-### Start the Frontend
+Frontend:
+
 ```bash
 cd frontend
 npm run dev
 ```
-The frontend application will be available at `http://localhost:5173` (or the port specified by Vite).
 
-## 💡 Usage
+The frontend runs on http://localhost:5173 and talks to the backend for auth and history while Socket.io handles the calls.
 
-1. **Sign Up / Login**: Create a new account or sign in with existing credentials.
-2. **Dashboard**: On the home screen, enter a unique room ID to join a call or create a new room.
-3. **Video Meeting**: Once inside, give permission for camera and microphone. Share the room ID with others to join.
-4. **Chat**: Use the sidebar to send messages to all participants in the room.
-5. **History**: Check the history page to see details of your previous interactions.
+## Layout
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-
-## Images
-
-
-<img width="1910" height="917" alt="Screenshot 2026-03-19 094037" src="https://github.com/user-attachments/assets/7d7e81bf-3663-4960-8cea-531e7a6fe778" />
-<img width="1917" height="917" alt="Screenshot 2026-03-19 094120" src="https://github.com/user-attachments/assets/39a5cc47-b224-4d85-89e8-6699817e1e4d" />
-<img width="1913" height="917" alt="Screenshot 2026-03-19 095822" src="https://github.com/user-attachments/assets/c2370046-36ca-4f4d-9d3f-9f2cd860cc90" />
-<img width="1917" height="912" alt="Screenshot 2026-03-19 100013" src="https://github.com/user-attachments/assets/10606053-2e63-400c-a331-a43d7100b0b7" />
+```
+backend/src/
+  app.js                     server, Mongo connection, Socket.io setup
+  controllers/socketManager  join-call, signal, chat, disconnect handlers
+  controllers/user           register, login, activity
+  models/                    User and Meeting schemas
+  routes/                    auth and activity endpoints
+frontend/src/
+  pages/VideoMeet.jsx        the call: WebRTC, screen share, chat
+  pages/                     landing, auth, home, history
+  contexts/AuthContext.jsx   auth state and API calls
+```
